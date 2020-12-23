@@ -13,6 +13,9 @@ func SetupDatabase() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	DbConn.SetMaxOpenConns(4)
+	DbConn.SetMaxIdleConns(4)
+	DbConn.SetConnMazLifetime(60 * time.Second)
 }
 
 // we need the Go database driver, as this is not included in the main package.
@@ -20,8 +23,8 @@ func SetupDatabase() {
 
 // query the database
 
-func getProductList() ([]Product, error) {
-	results, err := database.DbConn.Query(`SELECT productId,
+func getProductList() ([]Product, error) {// DATABASES MUST BE UPDATED TO USE CONTEXTS WITH TIMEOUTS.
+	results, err := database.DbConn.QueryContext(`SELECT productId,
 	manufacturer,
 	sku,
 	upc,
@@ -50,7 +53,9 @@ func getProductList() ([]Product, error) {
 }
 
 func getProduct(productID int) (*Product, error) {
-	row := database.DbConn.QueryRow(`SELECT productId,
+	ctx, cancel := context.WithTimeout(context.Background(), 15 * time.Second)// if a query takes longer than 15 seconds. It will cancel and will return.
+	defer cancel()
+	row := database.DbConn.QueryRowContext(`SELECT productId,
 	manufacturer,
 	sku,
 	upc,
@@ -78,13 +83,17 @@ func getProduct(productID int) (*Product, error) {
 }
 
 func updateProduct(product Product) error {
-	_, err := database.DbConn.Exec(`UPDATE products SET ...`)
+	ctx, cancel := context.WithTimeout(context.Background(), 15 * time.Second)// if a query takes longer than 15 seconds. It will cancel and will return.
+	defer cancel()
+	_, err := database.DbConn.ExecContext(`UPDATE products SET ...`)
 // if err nil, return err
 return nil
 }
 
 func insertProduct(product Product) (int,error) {
-	result, err := database.DbConn.Exec(`INSERT INTO products...`)
+	ctx, cancel := context.WithTimeout(context.Background(), 15 * time.Second)// if a query takes longer than 15 seconds. It will cancel and will return.
+	defer cancel()
+	result, err := database.DbConn.ExecContext(`INSERT INTO products...`)
 // if err nil, return err
 insertID, err := result.LastInserId()
 return int(insertID), nil
