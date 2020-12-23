@@ -89,11 +89,14 @@ func productHandler(w http.ResponseWriter, r *http.Request) {// gt a specific pr
 func main() { // see fail on main fail serveri alustamiseks ning tööle panemiseks.
 	http.Handle("/foo", &fooHandler{Message: "foo called"}) // set the message
 	// set the serer to listen and serve
-	http.HandleFunc("/bar", barHandler) // bar patterna and the HTTP handleFunc funciton
+	http.HandleFunc("/bar", barHandler) // bar pattern and the HTTP handleFunc funciton
 	http.ListenAndServe(":5000", nil)   // nil for the handler and ServeMux. This will tell it to use the default ServeMux
 
-	http.HandleFunc("/products", productsHandler)
-	http.HandleFunc("/products/", productHandler)
+	// the middleware handler is expecting a middleware handler and not a handler func
+	productListHandler := http.HandlerFunc(productsHandler)
+	productItemHandler := http.HandlerFunc(productHandler)
+	http.Handle("/products", middlewareHandler(productListHandler))
+	http.Handle("/products/", middlewareHandler(productItemHandler))
 }
 
 // here is the simpler Http call function
@@ -148,3 +151,14 @@ func productsHandler(w http.ResponseWriter, r *http.Request) {
 // /products/123
 
 // HTTP Mux
+
+func middlewareHandler(handler http.Handler) http.Handler {// this handerfunc wraps the handler that was passed in.
+	return http.HandlerFunc(func(w, http.ResponseWriter, r *http.Request)) {
+		// allowing us to proccess a request handler before or after our intended handler is processed.
+	
+		fmt.Println("before hander; middleware start")
+		start := time.Now()
+		handler.ServeHttp(w,r)
+		fmt.Printf("middleware finished; %s", time.Since(start))
+	})
+}
