@@ -81,3 +81,8 @@ func productHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+// ServeMUX will find the correct variable tpe patameters
+
+// Dybamic or Parametric Routes
+// /products/123
