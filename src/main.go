@@ -4,6 +4,10 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strconv"
+	"strings"
+
+	"github.com/sqs/goreturns/returns"
 )
 
 type fooHandler struct {
@@ -26,14 +30,70 @@ func (f *fooHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(f.Message)) //<< wrties out the message field to the HTTP response using the message writer
 }
 
+func findProductByID(productID int) (*Product, int) {
+	for i, product := range productList {
+		if product.ProductID == productID {
+			return &product, i
+		}
+	}
+}
+
+func productHandler(w http.ResponseWriter, r *http.Request) {// gt a specific product gy Id /products/2 << for example.
+	urlPathSegments := strings.Split(r.URL.Path, "products/")
+	productID, err := strconv.Atoi(urlPathSegments[len(urlPathSegments)-1])
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	product, listItemIndex := findProductById(productID)
+	if product == nil {
+		http.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	switch r.Method {
+	case http.http.MethodGet:
+		// return a single product
+		productJSON, err := json.Marshal(product)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(productJSON)
+	case http.MethodPut:
+		// update product in the list
+		var updateProduct Product
+		bodyBytes, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		err = json.Unmarshal(bodyBytes, &updatedProduct)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		if updateProduct.ProductID != productID {// id in the URL path
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		product = &updateProduct
+		productList[listItemIndex] = *&product
+		 w.WriteHeader(http.StatusOK)
+		 return
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+}
+
 func main() { // see fail on main fail serveri alustamiseks ning tööle panemiseks.
 	http.Handle("/foo", &fooHandler{Message: "foo called"}) // set the message
 	// set the serer to listen and serve
 	http.HandleFunc("/bar", barHandler) // bar patterna and the HTTP handleFunc funciton
 	http.ListenAndServe(":5000", nil)   // nil for the handler and ServeMux. This will tell it to use the default ServeMux
 
-	http.HandleFunc("/products", productHandler)
-
+	http.HandleFunc("/products", productsHandler)
+	http.HandleFunc("/products/", productHandler)
 }
 
 // here is the simpler Http call function
@@ -53,7 +113,7 @@ func getNextID() int {
 	return highestID + 1
 }
 
-func productHandler(w http.ResponseWriter, r *http.Request) {
+func productsHandler(w http.ResponseWriter, r *http.Request) {
 	// handlers are capable of handling request messages with different request methods.
 	switch r.Method {
 	case http.MethodGet:
@@ -86,3 +146,5 @@ func productHandler(w http.ResponseWriter, r *http.Request) {
 
 // Dybamic or Parametric Routes
 // /products/123
+
+// HTTP Mux
