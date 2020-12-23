@@ -97,6 +97,8 @@ func main() { // see fail on main fail serveri alustamiseks ning tööle panemis
 	productItemHandler := http.HandlerFunc(productHandler)
 	http.Handle("/products", middlewareHandler(productListHandler))
 	http.Handle("/products/", middlewareHandler(productItemHandler))
+
+	database.SetupDatabase()// here are things.
 }
 
 // here is the simpler Http call function
