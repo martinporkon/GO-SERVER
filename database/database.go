@@ -76,3 +76,18 @@ func getProduct(productID int) (*Product, error) {
 	// w.WriteHeader(InternalServeError)
 	//Works with Postman.
 }
+
+func updateProduct(product Product) error {
+	_, err := database.DbConn.Exec(`UPDATE products SET ...`)
+// if err nil, return err
+return nil
+}
+
+func insertProduct(product Product) (int,error) {
+	result, err := database.DbConn.Exec(`INSERT INTO products...`)
+// if err nil, return err
+insertID, err := result.LastInserId()
+return int(insertID), nil
+}
+
+// delete as well
