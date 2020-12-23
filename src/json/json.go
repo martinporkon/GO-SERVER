@@ -16,6 +16,12 @@ type Product struct {
 	ProductName    string `json:"productName`
 }
 
+var productList []Product
+
+func init() {
+
+}
+
 func main() {
 
 	product := &Product{
