@@ -15,7 +15,7 @@ func SetupDatabase() {
 	}
 	DbConn.SetMaxOpenConns(4)
 	DbConn.SetMaxIdleConns(4)
-	DbConn.SetConnMazLifetime(60 * time.Second)
+	DbConn.SetConnMaxLifetime(60 * time.Second)
 }
 
 // we need the Go database driver, as this is not included in the main package.

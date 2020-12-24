@@ -99,6 +99,9 @@ func main() { // see fail on main fail serveri alustamiseks ning tööle panemis
 	http.Handle("/products/", middlewareHandler(productItemHandler))
 
 	database.SetupDatabase()// here are things.
+
+	receipt.SetupRoutes(basePath)
+	product.SetupRoutes(basePath)
 }
 
 // here is the simpler Http call function
