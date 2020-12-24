@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/sqs/goreturns/returns"
+	"golang.org/x/net/websocket"
 )
 
 type fooHandler struct {
@@ -97,7 +98,7 @@ func main() { // see fail on main fail serveri alustamiseks ning tööle panemis
 	productItemHandler := http.HandlerFunc(productHandler)
 	http.Handle("/products", middlewareHandler(productListHandler))
 	http.Handle("/products/", middlewareHandler(productItemHandler))
-
+	http.Handle("/websocket", websocket.Handler(productSocket))
 	database.SetupDatabase()// here are things.
 
 	receipt.SetupRoutes(basePath)
@@ -167,3 +168,7 @@ func middlewareHandler(handler http.Handler) http.Handler {// this handerfunc wr
 		fmt.Printf("middleware finished; %s", time.Since(start))
 	})
 }
+
+
+// WebSockets
+

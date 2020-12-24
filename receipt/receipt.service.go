@@ -23,7 +23,7 @@ func handleReceipt(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		j, err := json.Marshal(receiptList)
+		j, err := json.Marshal(receiptPath)
 		if err != nil {
 			log.Fatal(err)
 		}
